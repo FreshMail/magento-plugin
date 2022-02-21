@@ -4,7 +4,7 @@
     <group id="freshmail">
         <job name="freshmail_run_subscribers_unsubscribed_from_freshmail"
              instance="Virtua\FreshMail\Cron\UnsubscribedFromFreshMail" method="execute">
-            <schedule>0 1 * * *</schedule>
+            <schedule>0 1,13 * * *</schedule>
         </job>
         <job name="freshmail_process_request_queue" instance="Virtua\FreshMail\Cron\ProcessRequestQueue" method="execute">
             <schedule>* * * * *</schedule>

@@ -7,6 +7,8 @@ namespace Virtua\FreshMail\Model;
 use Exception;
 use FreshMail\Api\Client\Exception\RequestException;
 use FreshMail\Api\Client\Exception\ServerException;
+use Magento\Framework\Exception\CouldNotSaveException;
+use Magento\Framework\Exception\NoSuchEntityException;
 use Magento\Framework\Exception\LocalizedException;
 use Magento\Newsletter\Model\Subscriber as MagentoSubscriber;
 use Virtua\FreshMail\Api\FreshMailApiInterfaceFactory;
@@ -15,6 +17,7 @@ use Virtua\FreshMail\Api\FullSyncSubscriberServiceInterface;
 use Virtua\FreshMail\Api\SubscriberRepositoryInterface;
 use Virtua\FreshMail\Api\SubscriberListServiceInterface;
 use Virtua\FreshMail\Logger\Logger;
+use Virtua\FreshMail\Model\FreshMail\StatusService;
 use Virtua\FreshMail\Model\System\Config;
 use Virtua\FreshMail\Exception\ApiException;
 use Virtua\FreshMail\Api\FreshMailStatusServiceInterface;
@@ -83,6 +86,11 @@ class FullSyncSubscriberService implements FullSyncSubscriberServiceInterface
     private $subscribersToEdit = [];
 
     /**
+     * @var array
+     */
+    private $subscribersToUnsubscribeInMagento = [];
+
+    /**
      * @var int
      */
     private $skippedNoNeedToUpdate = 0;
@@ -129,6 +137,7 @@ class FullSyncSubscriberService implements FullSyncSubscriberServiceInterface
         $this->errors = 0;
         foreach ($subscriberLists as $storeId => $subscriberData) {
             try {
+                $this->unsetSubscriberArrays();
                 $this->syncSubscribersFromStore($subscriberData, $storeId);
             } catch (LocalizedException $e) {
                 $this->logger->error($e->getMessage());
@@ -199,6 +208,7 @@ class FullSyncSubscriberService implements FullSyncSubscriberServiceInterface
 
         $this->addSubscribersToFreshMail($listHash);
         $this->editSubscribersToFreshMail($listHash);
+        $this->unsubscribeUsersInMagento();
     }
 
     /**
@@ -220,7 +230,7 @@ class FullSyncSubscriberService implements FullSyncSubscriberServiceInterface
                 throw $e;
             }
         }
-        
+
         $this->addToEdit($subscribersToEditCheck);
         $this->addToAdd($subscribersToAddCheck);
     }
@@ -274,7 +284,6 @@ class FullSyncSubscriberService implements FullSyncSubscriberServiceInterface
     private function addToEdit(array $subscribersToEditCheck): void
     {
         try {
-            // @todo: anything to do with subscriber "Soft bounce" and "Hard bounce" status (from the FreshMail)?
             foreach ($subscribersToEditCheck as $requestResult) {
                 $email = $requestResult['email'];
                 $subscriber = $this->subscriberDataByEmail[$email];
@@ -285,15 +294,26 @@ class FullSyncSubscriberService implements FullSyncSubscriberServiceInterface
 
                 $state = (int) $requestResult['state'];
 
-                // check if need to be updated as there are not any custom fields
+                // check if need to be updated
                 if ($state === (int) $currentFreshMailStatus) {
                     $this->skippedNoNeedToUpdate++;
                     continue;
                 }
 
-                $this->subscribersToEdit[$currentFreshMailStatus][] = [
-                    'email' => $email,
-                ];
+                if (in_array(
+                    $state,
+                    [
+                        StatusService::SUBSCRIBER_STATUS_UNSUBSCRIBED,
+                        StatusService::SUBSCRIBER_STATUS_SOFT_BOUNCE,
+                        StatusService::SUBSCRIBER_STATUS_HARD_BOUNCE
+                    ]
+                )) {
+                    $this->subscribersToUnsubscribeInMagento[] = $email;
+                } else {
+                    $this->subscribersToEdit[$currentFreshMailStatus][] = [
+                        'email' => $email,
+                    ];
+                }
             }
         } catch (\Throwable $e) {
             $this->logger->error($e->getMessage());
@@ -352,5 +372,32 @@ class FullSyncSubscriberService implements FullSyncSubscriberServiceInterface
                 }
             }
         }
+    }
+
+    private function unsubscribeUsersInMagento(): void
+    {
+        foreach ($this->subscribersToUnsubscribeInMagento as $email) {
+            try {
+                $subscriber = $this->subscriberRepository->getByEmail($email);
+            } catch (NoSuchEntityException $e) {
+                continue;
+            }
+            if ($subscriber) {
+                $subscriber->setStatus(MagentoSubscriber::STATUS_UNSUBSCRIBED);
+                try {
+                    $this->subscriberRepository->save($subscriber);
+                } catch (CouldNotSaveException $e) {
+                    $this->logger->error($e->getMessage());
+                    $this->errors++;
+                }
+            }
+        }
+    }
+
+    private function unsetSubscriberArrays(): void
+    {
+        $this->subscribersToAdd = [];
+        $this->subscribersToEdit = [];
+        $this->subscribersToUnsubscribeInMagento = [];
     }
 }
