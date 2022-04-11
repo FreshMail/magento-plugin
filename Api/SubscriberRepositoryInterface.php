@@ -21,7 +21,7 @@ interface SubscriberRepositoryInterface
     /**
      * @throws NoSuchEntityException
      */
-    public function getByEmail(string $email): Subscriber;
+    public function getByEmailAndWebsite(string $email, int $websiteId): Subscriber;
 
     /**
      * @throws IntegrationException

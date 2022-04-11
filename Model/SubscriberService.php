@@ -1,5 +1,5 @@
 <?php
-
+// todo check if this class is used if not remove
 declare(strict_types=1);
 
 namespace Virtua\FreshMail\Model;
@@ -42,7 +42,7 @@ class SubscriberService implements SubscriberServiceInterface
     {
         $listHash = null;
         try {
-            $subscriber = $this->subscriberRepository->getByEmail($email);
+            $subscriber = $this->subscriberRepository->getByEmailAndWebsite($email, 1);
             $listHash = $this->config->getListHashByStoreId($subscriber->getStoreId());
         } catch (NoSuchEntityException $e) {
             // todo handle exception

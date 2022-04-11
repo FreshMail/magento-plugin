@@ -22,6 +22,7 @@ use Virtua\FreshMail\Model\System\Config;
 use Virtua\FreshMail\Exception\ApiException;
 use Virtua\FreshMail\Api\FreshMailStatusServiceInterface;
 use Virtua\FreshMail\Api\RequestData\Subscriber;
+use Magento\Store\Model\StoreManagerInterface;
 
 class FullSyncSubscriberService implements FullSyncSubscriberServiceInterface
 {
@@ -66,6 +67,11 @@ class FullSyncSubscriberService implements FullSyncSubscriberServiceInterface
     private $subscriberListService = null;
 
     /**
+     * @var StoreManagerInterface
+     */
+    private $storeManager;
+
+    /**
      * @var Config
      */
     private $config;
@@ -91,6 +97,16 @@ class FullSyncSubscriberService implements FullSyncSubscriberServiceInterface
     private $subscribersToUnsubscribeInMagento = [];
 
     /**
+     * @var int|null
+     */
+    private $currentStoreId;
+
+    /**
+     * @var int|null
+     */
+    private $currentWebsiteId;
+
+    /**
      * @var int
      */
     private $skippedNoNeedToUpdate = 0;
@@ -113,6 +129,7 @@ class FullSyncSubscriberService implements FullSyncSubscriberServiceInterface
         Subscriber\GetMultipleInterfaceFactory $subscriberGetMultipleFactory,
         Subscriber\AddMultipleInterfaceFactory $subscriberAddMultipleFactory,
         Subscriber\EditMultipleInterfaceFactory $subscriberEditMultipleFactory,
+        StoreManagerInterface $storeManager,
         Config $config,
         Logger $logger
     ) {
@@ -124,6 +141,7 @@ class FullSyncSubscriberService implements FullSyncSubscriberServiceInterface
         $this->subscriberGetMultipleFactory = $subscriberGetMultipleFactory;
         $this->subscriberAddMultipleFactory = $subscriberAddMultipleFactory;
         $this->subscriberEditMultipleFactory = $subscriberEditMultipleFactory;
+        $this->storeManager = $storeManager;
         $this->config = $config;
         $this->logger = $logger;
     }
@@ -137,6 +155,7 @@ class FullSyncSubscriberService implements FullSyncSubscriberServiceInterface
         $this->errors = 0;
         foreach ($subscriberLists as $storeId => $subscriberData) {
             try {
+                $this->setCurrentStoreAndWebsite($storeId);
                 $this->unsetSubscriberArrays();
                 $this->syncSubscribersFromStore($subscriberData, $storeId);
             } catch (LocalizedException $e) {
@@ -148,6 +167,13 @@ class FullSyncSubscriberService implements FullSyncSubscriberServiceInterface
         if ($this->errors) {
             throw new LocalizedException(__('Some errors have been occurred during FreshMail sync.'));
         }
+    }
+
+
+    private function setCurrentStoreAndWebsite(int $storeId): void
+    {
+        $this->currentStoreId = $storeId;
+        $this->currentWebsiteId = (int) $this->storeManager->getStore($storeId)->getWebsiteId();
     }
 
     /**
@@ -378,7 +404,7 @@ class FullSyncSubscriberService implements FullSyncSubscriberServiceInterface
     {
         foreach ($this->subscribersToUnsubscribeInMagento as $email) {
             try {
-                $subscriber = $this->subscriberRepository->getByEmail($email);
+                $subscriber = $this->subscriberRepository->getByEmailAndWebsite($email, $this->currentWebsiteId);
             } catch (NoSuchEntityException $e) {
                 continue;
             }

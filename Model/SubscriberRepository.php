@@ -98,19 +98,19 @@ class SubscriberRepository implements SubscriberRepositoryInterface
 
         return $subscriber;
     }
-    
-    public function getByEmail(string $email): Subscriber
+
+    public function getByEmailAndWebsite(string $email, int $websiteId): Subscriber
     {
         /** @var Subscriber $subscriber */
         $subscriber = $this->subscriberFactory->create();
-        $subscriber->loadByEmail($email);
+        $subscriber->loadBySubscriberEmail($email, $websiteId);
         if (! $subscriber->getId()) {
             throw NoSuchEntityException::singleField('subscriber_id', $subscriber);
         }
 
         return $subscriber;
     }
-    
+
     /**
      * {@inheritdoc}
      */
