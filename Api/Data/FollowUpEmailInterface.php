@@ -9,6 +9,7 @@ interface FollowUpEmailInterface
     public const TYPE_ABANDONED_FIRST = 'abandoned_1';
     public const TYPE_ABANDONED_SECOND = 'abandoned_2';
     public const TYPE_ABANDONED_THIRD = 'abandoned_3';
+    public const TYPE_BIRTHDAY = 'birthday';
 
     public const ID = 'entity_id';
     public const CUSTOMER_ID = 'customer_id';

@@ -94,6 +94,11 @@
     <preference for="Virtua\FreshMail\Api\RequestData\Templates\TemplateInterface"
                 type="Virtua\FreshMail\Model\FreshMail\RequestData\Templates\Template"/>
 
+    <preference for="Virtua\FreshMail\Api\FollowUpEmail\Birthday\CustomerRepositoryInterface"
+                type="Virtua\FreshMail\Model\FollowUpEmail\Birthday\CustomerRepository"/>
+    <preference for="Virtua\FreshMail\Api\FollowUpEmail\Birthday\CouponGeneratorInterface"
+                type="Virtua\FreshMail\Model\FollowUpEmail\Birthday\CouponGenerator"/>
+
     <type name="Magento\Framework\Mail\TransportInterface">
         <plugin name="freshmail_mail_transport" type="Virtua\FreshMail\Plugin\Mail\TransportPlugin" sortOrder="1" disabled="false"/>
     </type>

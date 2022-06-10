@@ -8,13 +8,15 @@ use Virtua\FreshMail\Api\Email\SenderInterface;
 use Virtua\FreshMail\Api\Data\FollowUpEmailInterface;
 use Magento\Framework\ObjectManagerInterface;
 use Virtua\FreshMail\Model\Email\Sender\AbandonedCartSender;
+use Virtua\FreshMail\Model\Email\Sender\BirthdaySender;
 
 class SenderFactory implements SenderFactoryInterface
 {
     private $typeMapping = [
         FollowUpEmailInterface::TYPE_ABANDONED_FIRST => AbandonedCartSender::class,
         FollowUpEmailInterface::TYPE_ABANDONED_SECOND => AbandonedCartSender::class,
-        FollowUpEmailInterface::TYPE_ABANDONED_THIRD => AbandonedCartSender::class
+        FollowUpEmailInterface::TYPE_ABANDONED_THIRD => AbandonedCartSender::class,
+        FollowUpEmailInterface::TYPE_BIRTHDAY => BirthdaySender::class
     ];
 
     /**

@@ -10,5 +10,10 @@
                 <enable_api_send>1</enable_api_send>
             </transactional_emails>
         </freshmail>
+        <follow_up_email>
+            <birthday>
+                <discount_usage>1</discount_usage>
+            </birthday>
+        </follow_up_email>
     </default>
 </config>

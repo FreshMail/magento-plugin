@@ -167,6 +167,64 @@
                     </depends>
                 </field>
             </group>
+            <group id="birthday" translate="label" type="text" sortOrder="30" showInDefault="1" showInWebsite="1" showInStore="1">
+                <label>Birthday</label>
+                <field id="enabled" translate="label" type="select" sortOrder="10" showInStore="1" showInWebsite="1" showInDefault="1">
+                    <label>Enable</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                </field>
+                <field id="discount_type" translate="label" type="select" sortOrder="20" showInStore="1" showInWebsite="1" showInDefault="1">
+                    <label>Discount Type</label>
+                    <source_model>Virtua\FreshMail\Model\Config\Source\FollowUpEmail\DiscountType</source_model>
+                    <depends>
+                        <field id="enabled">1</field>
+                    </depends>
+                </field>
+                <field id="discount_value" translate="label" type="text" sortOrder="30" showInStore="1" showInWebsite="1" showInDefault="1">
+                    <label>Discount Value</label>
+                    <depends>
+                        <field id="enabled">1</field>
+                    </depends>
+                </field>
+                <field id="discount_expiry" translate="label" type="text" sortOrder="40" showInStore="1" showInWebsite="1" showInDefault="1">
+                    <label>Discount Expiry</label>
+                    <comment>After how many days discount code will expire</comment>
+                    <depends>
+                        <field id="enabled">1</field>
+                    </depends>
+                </field>
+                <field id="discount_usage" translate="label" type="text" sortOrder="50" showInStore="1" showInWebsite="1" showInDefault="1">
+                    <label>Discount Usage</label>
+                    <comment>Number of times discount can be used</comment>
+                    <depends>
+                        <field id="enabled">1</field>
+                    </depends>
+                </field>
+                <field id="email_day_send" translate="label" type="select" sortOrder="60" showInStore="1" showInWebsite="1" showInDefault="1">
+                    <label>Email Send</label>
+                    <source_model>Virtua\FreshMail\Model\Config\Source\FollowUpEmail\DiscountEmailDaySend</source_model>
+                    <depends>
+                        <field id="enabled">1</field>
+                    </depends>
+                </field>
+                <field id="email_template" translate="label" type="select" sortOrder="100" showInStore="1" showInWebsite="1" showInDefault="1">
+                    <label>Email Template</label>
+                    <frontend_class>email-template</frontend_class>
+                    <source_model>Virtua\FreshMail\Model\Config\Source\FollowUpEmail\EmailTemplates</source_model>
+                    <depends>
+                        <field id="enabled">1</field>
+                    </depends>
+                </field>
+                <field id="email_template_edit_button" translate="button_label,hint" sortOrder="150" showInStore="1" showInWebsite="1" showInDefault="1">
+                    <label/>
+                    <button_label>Edit Template</button_label>
+                    <frontend_model>Virtua\FreshMail\Block\Adminhtml\System\Config\EditTemplate</frontend_model>
+                    <comment>Template will open in FreshMail editor. After making changes and saving template in FreshMail, go to Magento and click on 'Synchronize templates' to see the changes.</comment>
+                    <depends>
+                        <field id="enabled">1</field>
+                    </depends>
+                </field>
+            </group>
         </section>
     </system>
 </config>

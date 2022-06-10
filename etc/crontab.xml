@@ -18,6 +18,9 @@
         <job name="freshmail_follow_up_email_abandoned_cart" instance="Virtua\FreshMail\Cron\FollowUpEmail\AbandonedCart" method="execute">
             <schedule>20 5 * * *</schedule>
         </job>
+        <job name="freshmail_follow_up_email_birthday" instance="Virtua\FreshMail\Cron\FollowUpEmail\Birthday" method="execute">
+            schedule>30 5 * * *</schedule>
+        </job>
         <job name="freshmail_generate_reports" instance="Virtua\FreshMail\Cron\GenerateReports" method="execute">
             <schedule>0 6 * * *</schedule>
         </job>

@@ -11,6 +11,8 @@ use Virtua\FreshMail\Api\Data\FollowUpEmailInterface;
 use Virtua\FreshMail\Api\Email\SenderFactoryInterface;
 use Magento\Quote\Api\CartRepositoryInterface;
 use Virtua\FreshMail\Api\TemplateRepositoryInterface;
+use Magento\SalesRule\Api\CouponRepositoryInterface;
+use Magento\Customer\Api\CustomerRepositoryInterface;
 
 class FollowUpEmailService implements FollowUpEmailServiceInterface
 {
@@ -34,14 +36,28 @@ class FollowUpEmailService implements FollowUpEmailServiceInterface
      */
     private $templateRepository;
 
+    /**
+     * @var CouponRepositoryInterface
+     */
+    private $couponRepository;
+
+    /**
+     * @var CouponRepositoryInterface
+     */
+    private $customerRepository;
+
     public function __construct(
         SenderFactoryInterface $senderFactory,
         CartRepositoryInterface $cartRepository,
-        TemplateRepositoryInterface $templateRepository
+        TemplateRepositoryInterface $templateRepository,
+        CouponRepositoryInterface $couponRepository,
+        CustomerRepositoryInterface $customerRepository
     ) {
         $this->senderFactory = $senderFactory;
         $this->cartRepository = $cartRepository;
         $this->templateRepository = $templateRepository;
+        $this->couponRepository = $couponRepository;
+        $this->customerRepository = $customerRepository;
     }
 
     /**
@@ -72,6 +88,8 @@ class FollowUpEmailService implements FollowUpEmailServiceInterface
     {
         if ($this->isAbandonedCartType()) {
             $this->setAbandonedCartVariablesToSender($sender);
+        } elseif ($this->isBirthdayType()) {
+            $this->setBirthdayVariablesToSender($sender);
         }
     }
 
@@ -87,6 +105,11 @@ class FollowUpEmailService implements FollowUpEmailServiceInterface
         );
     }
 
+    private function isBirthdayType(): bool
+    {
+        return $this->followUpEmail->getType() === FollowUpEmailInterface::TYPE_BIRTHDAY;
+    }
+
     /**
      * @throws NoSuchEntityException
      */
@@ -97,5 +120,14 @@ class FollowUpEmailService implements FollowUpEmailServiceInterface
             $this->templateRepository->getById($this->followUpEmail->getTemplateId())
                 ->getData('freshmail_additional_text')
         );
+    }
+
+    /**
+     * @throws NoSuchEntityException
+     */
+    private function setBirthdayVariablesToSender(SenderInterface $sender): void
+    {
+        $sender->setCoupon($this->couponRepository->getById($this->followUpEmail->getConnectedEntityId()));
+        $sender->setCustomer($this->customerRepository->getById($this->followUpEmail->getCustomerId()));
     }
 }

@@ -123,6 +123,12 @@ class TemplateService implements TemplateServiceInterface
             $text
         );
 
+        $text = preg_replace(
+            '/{coupon_code}/',
+            '{{var coupon.code}}',
+            $text
+        );
+
         return $text;
     }
 
