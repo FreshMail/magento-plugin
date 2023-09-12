@@ -156,7 +156,7 @@ class IntegrationService implements IntegrationServiceInterface
             $message = (string) __("Integration Activation failed. Failed getting IP address from hostname");
             $this->logger->logIfDebugModeOn($message);
             throw new Exception($message);
-        } elseif (filter_var($ip, FILTER_FLAG_NO_PRIV_RANGE)) {
+        } elseif (filter_var($ip, FILTER_VALIDATE_IP, FILTER_FLAG_NO_PRIV_RANGE)) {
             $message = (string) __("Integration Activation failed. The IP address must not be withing a private range");
             $this->logger->logIfDebugModeOn($message);
             throw new Exception($message);
